@@ -7,10 +7,15 @@
 #include <cstdlib>
 #include "AVL_tree"
 #include "RedBlack_tree"
-#include "Balanced_tree"
 
 using std::cout;
 using std::endl;
+
+class Balanced_tree<typename T>{
+    void virtual insert(T x){};
+    void virtual find(T x){};
+    void virtual erase(T x){};
+};
 
 double get_time()
 {
