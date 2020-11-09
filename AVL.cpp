@@ -43,7 +43,6 @@ template <typename type> class AVL
             ++size;
             return new AVL_node<type>(value);
         }
-
         if (value < node->val)
             node->left = insert(node->left, value);
         else
@@ -224,4 +223,5 @@ template <typename type> class AVL
     {
         print(head);
     }
+
 };

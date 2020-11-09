@@ -1,0 +1,3 @@
+/media/Data/Clion/3semnew/TREE/WeAreTrees/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/media/Data/Clion/3semnew/TREE/WeAreTrees/cmake-build-debug/CMakeFiles/edit_cache.dir
+/media/Data/Clion/3semnew/TREE/WeAreTrees/cmake-build-debug/CMakeFiles/WeAreTrees.dir
