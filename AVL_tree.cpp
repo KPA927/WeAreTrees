@@ -69,9 +69,9 @@ private:
 
 
         if(value > node->value)
-            node->right = remove(node->right, value);
+            node->right = erase(node->right, value);
         else if(value < node->value)
-            node->left = remove(node->left, value);
+            node->left = erase(node->left, value);
         else
         {
             size--;
@@ -83,7 +83,7 @@ private:
             min->right = remove_min(node->right);
             min->left = node->left;
             delete node;
-            return balanced(min);
+            return balance(min);
         }
         return balance(node);
     }
@@ -121,9 +121,8 @@ private:
     }
 
 
-    avl_node<T>* balance(avl_node<T>* node)
-    {
-        height_upd(node);
+    avl_node<T>* balance(avl_node<T>* node){
+        fix(node);
 
         if (node->diff() == -2) {
             if (node->right->diff() == 1)
@@ -146,8 +145,8 @@ private:
 public:
     void insert(T value)
     {
-    if(!find(value))
-        head = insert(head, value);
+        if(!find(value))
+            head = insert(head, value);
     }
     void erase(T value)
     {
@@ -180,8 +179,3 @@ public:
     }
 
 };
-
-int main() {
-    std::cout << "Hello, World!" << std::endl;
-    return 0;
-}

@@ -1,11 +1,9 @@
+#include "AVL_tree.cpp"
 #include <iostream>
-#include <vector>
 #include <random>
 #include <set>
 #include <chrono>
 #include <fstream>
-#include <cstdlib>
-#include <string>
 
 using std::cout;
 using std::endl;
@@ -15,7 +13,7 @@ class profiler {
 private:
     int N = 1000, n = 10000;
     int *push_sequence = new int[N];
-    int *test_sequance = new int[n];
+    int *test_sequence = new int[n];
     T tree;
 
     double get_time(){
@@ -33,7 +31,7 @@ private:
 public:
     profiler() {
         for (int i = 0; i < n; i++) {
-            test_sequance[i] = rand_uns(1, 1000);
+            test_sequence[i] = rand_uns(1, 1000);
             if (i < N) {
                 push_sequence[i] = rand_uns(1, 1000);
             }
@@ -52,17 +50,17 @@ public:
             //testing
             for (int j = 0; j < n; j++) {
                 double start_insert = get_time();
-                tree.insert(test_sequance[0]);
+                tree.insert(test_sequence[0]);
                 double end_insert = get_time();
                 insert_time += end_insert - start_insert;
 
                 double start_find = get_time();
-                tree.find(test_sequance[0]);
+                tree.find(test_sequence[0]);
                 double end_find = get_time();
                 find_time += end_find - start_find;
 
                 double start_erase = get_time();
-                tree.erase(test_sequance[0]);
+                tree.erase(test_sequence[0]);
                 double end_erase = get_time();
                 erase_time += end_erase - start_erase;
             }
@@ -74,9 +72,15 @@ public:
 
         std::system("python3 plotting.py");
     }
+
+    ~profiler(){
+        delete [] push_sequence;
+        delete [] test_sequence;
+    }
 };
 
 int main(){
-    profiler <std::set<int>> pf;
+    profiler <AVL<int>> pf;
     pf.test();
 }
+
