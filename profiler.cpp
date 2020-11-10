@@ -1,4 +1,5 @@
-#include "AVL_tree.cpp"
+#include "AVL_tree.h"
+#include "rb_tree.cpp"
 #include <iostream>
 #include <random>
 #include <set>
@@ -80,7 +81,13 @@ public:
 };
 
 int main(){
-    profiler <AVL<int>> pf;
+    char k;
+    cin >> k;
+    if (k == '1') {
+        profiler<AVL<int>> pf;
+    } else {
+        profiler<rb_set<int>> pf;
+    }
     pf.test();
 }
 
