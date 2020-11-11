@@ -1,4 +1,5 @@
 #include <iostream>
+#include "template.h"
 
 template<typename T> class AVL;
 
@@ -11,6 +12,11 @@ template <typename T> class avl_node{
     avl_node(T val){
         value = val;
     }
+    ~avl_node(){
+        delete left;
+        delete right;
+    }
+
     int diff(){
         int lheight = 0, rheight = 0;
         if(left){
@@ -24,7 +30,7 @@ template <typename T> class avl_node{
     friend  class AVL<T>;
 };
 
-template<typename  T> class AVL{
+template<typename  T> class AVL:Balanced_tree<T>{
 private:
     int size = 0;
     avl_node<T>* head = nullptr;
@@ -45,47 +51,55 @@ private:
         }
         return balance(node);
     }
-    avl_node<T>* min_node(avl_node<T>* current)
-    {
-        if(current->left == nullptr){
-            return current;
-        }else{
-            return min_node(current->left);
-        }
-    }
-
-    avl_node<T>* remove_min(avl_node<T>* current)
-    {
-        if(current->left == nullptr)
-            return current->right;
-        current->left = remove_min(current->left);
-        return balance(current);
-    }
 
     avl_node<T>* erase(avl_node<T>* node, T value)
     {
-        if(node == nullptr)
-            return  node;
+        if (!node)
+            return node;
 
-
-        if(value > node->value)
-            node->right = erase(node->right, value);
-        else if(value < node->value)
+        if (value < node->value)
             node->left = erase(node->left, value);
-        else
-        {
+
+        else if (value > node->value)
+            node->right = erase(node->right, value);
+
+        else {
+            //std::cout<<node->value<<'\n';
             size--;
-            if(node->right == nullptr)
-            {
+            if (!node->right)
                 return node->left;
-            }
-            avl_node<T>* min = min_node(node->right);
-            min->right = remove_min(node->right);
-            min->left = node->left;
-            delete node;
-            return balance(min);
+
+            node = remove_rmin(node);
         }
         return balance(node);
+    }
+
+    T get_min(avl_node<T>* curr_node)
+    {
+        if (curr_node->left == nullptr)
+            return curr_node->value;
+        return get_min(curr_node->left);
+    }
+
+    avl_node<T>* remove_rmin(avl_node<T>* curr_node)
+    {
+        avl_node<T>*parent = curr_node, *root = curr_node;
+        curr_node = parent->right;
+        while (curr_node->left) {
+            parent = curr_node;
+            curr_node = curr_node->left;
+        }
+
+        root->value = curr_node->value;
+
+        if (curr_node == root->right)
+            root->right = root->right->right;
+        else
+            parent->left = curr_node->right;
+
+        delete (curr_node);
+
+        return root;
     }
 
     void fix(avl_node<T>* node)
@@ -120,34 +134,63 @@ private:
         return root;
     }
 
-
     avl_node<T>* balance(avl_node<T>* node){
         fix(node);
 
         if (node->diff() == -2) {
-            if (node->right->diff() == 1)
+            if (node->right->diff() == 1){
                 node->right = rot_right(node->right); //большой левый поворот
+                //std::cout <<" big";
+
+            }
+            //std::cout <<"left "<<node->value <<'\n';
 
             return rot_left(node);
         }
 
         if (node->diff() == 2) {
-            if (node->left->diff() == -1)
+            if (node->left->diff() == -1){
                 node->left = rot_left(node->left); //большой правый поворот
-
+                //std::cout <<" big";
+            }
+            //std::cout <<"right "<<node->value <<'\n';
             return rot_right(node);
         }
         return node;
     }
 
+    void print(avl_node<T>* node)
+    {
+        if (!node)
+            return;
+        print(node->left);
+        std::cout << node->value << ' ';
+        print(node->right);
+    }
+
+    void deletetree(avl_node<T>* node){
+        if(!node->left){
+            deletetree(node->left);
+        }
+        if(!node->right){
+            deletetree(node->right);
+        }
+        delete node;
+    }
 
 
 public:
+
+    ~AVL<T>(){
+        deletetree(head);
+    }
+
     void insert(T value)
     {
         if(!find(value))
             head = insert(head, value);
     }
+
     void erase(T value)
     {
         head = erase(head, value);
@@ -170,12 +213,19 @@ public:
 
     }
 
+
     bool empty()
     {
         if(size==0)
             return true;
         else
             return false;
+    }
+
+    void print()
+    {
+        print(head);
+        std::cout << "\n";
     }
 
 };
