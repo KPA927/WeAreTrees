@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <queue>
-
+#include "template.h"
 template <typename T>
 class rb_node{
 private:
@@ -395,7 +395,7 @@ public:
 
 
 template <typename T>
-class rb_set{
+class rb_set: public Balanced_tree{
 private:
     raw_rb_tree<T> tree;
 public:
