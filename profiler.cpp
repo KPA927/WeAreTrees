@@ -4,6 +4,7 @@
 #include <set>
 #include <chrono>
 #include <fstream>
+#include "rb_tree.cpp"
 
 using std::cout;
 using std::endl;
@@ -80,7 +81,7 @@ public:
 };
 
 int main(){
-    profiler <AVL<int> > pf;
+    profiler <rb_set<int> > pf;
     pf.test();
 }
 

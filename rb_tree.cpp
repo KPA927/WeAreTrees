@@ -1,80 +1,426 @@
 #include <iostream>
-#include <random>
-#include <set>
-#include <chrono>
-#include <fstream>
-#include "rb_tree.cpp"
-using std::cout;
-using std::endl;
+#include <string>
+#include <queue>
 
-template<class T>
-class profiler {
+template <typename T>
+class rb_node{
 private:
-    int N = 1000, n = 1000;
-    int *push_sequence = new int[N];
-    int *test_sequence = new int[n];
-    T tree;
-
-    double get_time(){
-        //chrono - класс для времени
-        return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
-    }
-
-    int rand_uns(int min, int max){
-        unsigned seed = std::chrono::steady_clock::now().time_since_epoch().count();
-        static std::default_random_engine e(seed);
-        std::uniform_int_distribution<int> d(min, max);
-        return d(e);
-    }
-
+    T key;
+    std::string color;
+    rb_node* left;
+    rb_node* right;
+    rb_node* parent;
 public:
-    profiler() {
-        for (int i = 0; i < n; i++)
-            test_sequence[i] = rand_uns(1, 1000);
-        for (int i = 0; i < N; i++)
-            test_sequence[i] = rand_uns(1, 1000);
+    rb_node(T key, std::string color, rb_node<T>* parent){
+        this->key = key;
+        this->parent = parent;
+        if(color == "black" or color == "red") {
+            this->color = color;
+        }
+        else{
+            this->color = "black";
+        }
+        this->left = nullptr;
+        this->right = nullptr;
+    }
+    void set_key(T key){
+        this->key = key;
+    }
+    T get_key(){
+        return this->key;
     }
 
-    void test() {
-        std::ofstream fout("data.txt"); // создаём объект класса ofstream для записи и связываем его с файлом
-        for (int i = 0; i < N; i++) {
-            tree.insert(push_sequence[i]);
+    void set_color(std::string color){
+        if(color == "black" or color == "red"){
+            this->color = color;
+        }
+    }
+    std::string get_color(){
+        return this->color;
+    }
 
-            double insert_time = 0;
-            double find_time = 0;
-            double erase_time = 0;
+    rb_node* get_left(){
+        return this->left;
+    }
+    rb_node* get_right(){
+        return this->right;
+    }
 
-            //testing
-            for (int j = 0; j < n; j++) {
-                double start_insert = get_time();
-                tree.insert(test_sequence[j]);
-                double end_insert = get_time();
-                insert_time += end_insert - start_insert;
+    rb_node* get_parent(){
+        return this->parent;
+    }
+    void set_parent(rb_node* parent){
+        this->parent = parent;
+    }
+    void set_left(rb_node* node){
+        this->left = node;
+    }
+    void set_right(rb_node* node){
+        this->right = node;
+    }
 
-                double start_find = get_time();
-                tree.find(test_sequence[j]);
-                double end_find = get_time();
-                find_time += end_find - start_find;
+    ~rb_node(){
+        delete left;
+        delete right;
+    }
+};
 
-                double start_erase = get_time();
-                tree.erase(test_sequence[j]);
-                double end_erase = get_time();
-                erase_time += end_erase - start_erase;
+template <typename T>
+class raw_rb_tree{
+private:
+    int tree_size;
+    rb_node<T>* root;
+    rb_node<T>* get_grandparent(rb_node<T>* cr_node){
+        if(cr_node->get_parent() == nullptr or (cr_node->get_parent())->get_parent() == nullptr){
+            return nullptr;
+        }
+        else{
+            return (cr_node->get_parent())->get_parent();
+        }
+    }
+    rb_node<T>* get_uncle(rb_node<T>* cr_node){
+        if(get_grandparent(cr_node) == nullptr){
+            return nullptr;
+        }
+        if(cr_node->get_parent() == get_grandparent(cr_node)->get_right()){
+            return get_grandparent(cr_node)->get_left();
+        }
+        if(cr_node->get_parent() == get_grandparent(cr_node)->get_left()){
+            return get_grandparent(cr_node)->get_right();
+        }
+        return nullptr;
+    }
+    rb_node<T>* get_sibling(rb_node<T>* cr_node){
+        if(cr_node == cr_node->get_parent()->get_left()){
+            return cr_node->get_parent()->get_right();
+        }
+        else{
+            return  cr_node->get_parent()->get_left();
+        }
+    }
+    void replace_node(rb_node<T>* N, rb_node<T>* child){
+        if(child != nullptr){
+            child->set_parent(N->get_parent());
+        }
+        if(N == N->get_parent()->get_left()){
+            N->get_parent()->set_left(child);
+        }
+        else{
+            N->get_parent()->set_right(child);
+        }
+        return;
+    }
+    void right_rotation(rb_node<T>* cr_node){
+        rb_node<T>* tmp = cr_node->get_left();
+        tmp->set_parent(cr_node->get_parent());
+        if(cr_node->get_parent() != nullptr){
+            if(cr_node->get_parent()->get_left() == cr_node){
+                cr_node->get_parent()->set_left(tmp);
+            }
+            else{
+                cr_node->get_parent()->set_right(tmp);
+            }
+        }
+        else{
+            root = tmp;
+        }
+        cr_node->set_left(tmp->get_right());
+        if(tmp->get_right() != nullptr){
+            tmp->get_right()->set_parent(cr_node);
+        }
+        cr_node->set_parent(tmp);
+        tmp->set_right(cr_node);
+    }
+    void left_rotation(rb_node<T>* cr_node){
+        rb_node<T>* tmp = cr_node->get_right();
+        tmp->set_parent(cr_node->get_parent());
+        if(cr_node->get_parent() != nullptr){
+            if(cr_node->get_parent()->get_right() == cr_node){
+                cr_node->get_parent()->set_right(tmp);
+            }
+            else{
+                cr_node->get_parent()->set_left(tmp);
+            }
+        }
+        else{
+            root = tmp;
+        }
+        cr_node->set_right(tmp->get_left());
+        if(tmp->get_left() != nullptr){
+            tmp->get_left()->set_parent(cr_node);
+        }
+        cr_node->set_parent(tmp);
+        tmp->set_left(cr_node);
+    }
+    void fix_insertion(rb_node<T>* new_node){
+        rb_node<T>* tmp = new_node;
+        while(tmp != nullptr and tmp->get_parent() != nullptr and tmp->get_parent()->get_color() == "red"){
+            rb_node<T>* uncle = get_uncle(tmp);
+            if(uncle != nullptr and uncle->get_color() == "red"){
+                uncle->set_color("black");
+                tmp->get_parent()->set_color("black");
+                tmp->get_parent()->get_parent()->set_color("red");
+            }
+            else{
+                if(tmp == tmp->get_parent()->get_right() and tmp->get_parent() == get_grandparent(tmp)->get_left()){
+                    left_rotation(tmp->get_parent());
+                    tmp = tmp->get_left();
+                }
+                else if(tmp == tmp->get_parent()->get_left() and tmp->get_parent() == get_grandparent(tmp)->get_right()){
+                    right_rotation(tmp->get_parent());
+                    tmp = tmp->get_right();
+                }
+                tmp->get_parent()->set_color("black");
+                get_grandparent(tmp)->set_color("red");
+                if(tmp == tmp->get_parent()->get_left() and tmp->get_parent() == get_grandparent(tmp)->get_left()){
+                    right_rotation(get_grandparent(tmp));
+                }
+                else{
+                    left_rotation(get_grandparent(tmp));
+                }
+            }
+            tmp = get_grandparent(tmp);
+        }
+        root->set_color("black");
+        return;
+    }
+public:
+    raw_rb_tree(){
+        root = nullptr;
+        tree_size = 0;
+    }
+    unsigned int get_size(){
+        return tree_size;
+    }
+    void insert(T key){
+        if(tree_size == 0){
+            root = new rb_node<T> (key, "black", nullptr);
+        }
+        else{
+            rb_node<T>* tmp = root;
+            while(true){
+                if(tmp->get_key() < key) {
+                    if (tmp->get_right() != nullptr)
+                        tmp = tmp->get_right();
+                    else
+                        break;
+
+                }
+                else if(tmp->get_key() > key) {
+                    if (tmp->get_left() != nullptr)
+                        tmp = tmp->get_left();
+                    else
+                        break;
+                }
+                else{
+                    return;
+                }
+            }
+            if(tmp->get_key() > key) {
+                rb_node<T>* new_node = new rb_node<T>(key, "red", tmp);
+                tmp->set_left(new_node);
+                fix_insertion(new_node);
+            }
+            else {
+                rb_node<T>* new_node = new rb_node<T>(key, "red", tmp);
+                tmp->set_right(new_node);
+                fix_insertion(new_node);
             }
 
-            fout << i << " " << insert_time / n << " " << find_time / n << " " << erase_time / n
-                 << endl; // запись строки в файл
         }
-        fout.close(); // закрываем файл
-
-        // std::system("python3 plotting.py");
+        tree_size++;
     }
+    void erase(T key){
+        if(root == nullptr){
+            return;
+        }
+        rb_node<T>* node_to_erase = root;
+        while(node_to_erase->get_key() != key){
+            if(node_to_erase->get_key() > key){
+                if(node_to_erase->get_left() != nullptr){
+                    node_to_erase = node_to_erase->get_left();
+                }
+                else{
+                    return;
+                }
+            }
+            else if(node_to_erase->get_key() < key){
+                if(node_to_erase->get_right() != nullptr){
+                    node_to_erase = node_to_erase->get_right();
+                }
+                else{
+                    return;
+                }
+            }
+        }
+        if(node_to_erase == nullptr){
+            return;
+        }
+        tree_size--;
+        rb_node<T>* N;
+        if(node_to_erase->get_left() != nullptr)
+            N = node_to_erase->get_left();
+        else{
+            N = node_to_erase;
+        }
+        while(N->get_right() != nullptr){
+            N = N->get_right();
+        }
+        node_to_erase->set_key(N->get_key());
+        rb_node<T>* child;
+        if(N->get_right() != nullptr){
+            child = N->get_right();
+        }
+        else{
+            child = N->get_left();
+        }
+        if(N->get_parent() == nullptr){
+            delete root;
+            root = nullptr;
+            return;
+        }
+        if(N->get_color() == "red")
+            replace_node(N, child);
+        else if(N->get_color() == "black") {
+            if (child != nullptr and child->get_color() == "red") {
+                child->set_color("black");
+            }
+            else {
+                rb_node<T>* tmp = N;
+                while(true){
+                    if(tmp->get_parent() == nullptr){ // case 1
+                        break;
+                    }
+                    rb_node<T>* s = get_sibling(tmp);
+                    if(s != nullptr and s->get_color() == "red"){ // case 2
+                        tmp->get_parent()->set_color("red");
+                        s->set_color("black");
+                        if(tmp == tmp->get_parent()->get_left()){
+                            left_rotation(tmp->get_parent());
+                        }
+                        else{
+                            right_rotation(tmp->get_parent());
+                        }
+                    }
+                    s = get_sibling(tmp);// case 3
+                    if(tmp->get_parent()->get_color() == "black" and s->get_color() == "black" and (s->get_left() ==
+                                                                                                    nullptr or s->get_left()->get_color() == "black") and (s->get_right() == nullptr or s->get_right()->get_color() == "black")){
+                        s->set_color("red");
+                        tmp = tmp->get_parent();
+                        continue;
+                    } // case 4
+                    else if(tmp->get_parent()->get_color() == "red" and s->get_color() == "black" and (s->get_left() ==
+                                                                                                       nullptr or s->get_left()->get_color() == "black") and (s->get_right() == nullptr or s->get_right()->get_color() == "black")){
+                        s->set_color("red");
+                        tmp->get_parent()->set_color("black");
+                        break;
+                    }
+                    else if(s->get_color() == "black") {
+                        if (tmp == tmp->get_parent()->get_left() and (s->get_left() !=
+                                                                      nullptr and
+                                                                      s->get_left()->get_color() == "red") and
+                            (s->get_right() == nullptr or s->get_right()->get_color() == "black")) {
+                            s->set_color("red");
+                            s->get_left()->set_color("black");
+                            right_rotation(s);
+                        }
+                        else if (tmp == tmp->get_parent()->get_right() and (s->get_right() !=
+                                                                            nullptr and
+                                                                            s->get_right()->get_color() == "red") and
+                                 (s->get_left() == nullptr or s->get_left()->get_color() == "black")) {
+                            s->set_color("red");
+                            s->get_right()->set_color("black");
+                            left_rotation(s);
+                        }
+                    }
+                    s = get_sibling(tmp);
+                    s->set_color(tmp->get_parent()->get_color());
+                    tmp->get_parent()->set_color("black");
+                    if(tmp == tmp->get_parent()->get_left()){
+                        s->get_right()->set_color("black");
+                        left_rotation(tmp->get_parent());
+                    }
+                    else{
+                        s->get_left()->set_color("black");
+                        right_rotation(tmp->get_parent());
+                    }
+                    break;
+                }
+            }
+            replace_node(N, child);
+        }
 
-    ~profiler(){
-        delete [] push_sequence;
-        delete [] test_sequence;
+        delete N;
+        return;
+    }
+    void print(){
+        if(tree_size == 0)
+            return;
+        std::queue<rb_node<T>* > q;
+        q.push(root);
+        rb_node<T>* tmp;
+        while(q.size() != 0){
+            tmp = q.front();
+            q.pop();
+            if(tmp != nullptr) {
+                std::cout << tmp->get_key() << " " << tmp->get_color() << "\n";
+                q.push(tmp->get_left());
+                q.push(tmp->get_right());
+            }
+        }
+        std::cout << '\n';
+    }
+    bool find(T key){
+        rb_node<T>* tmp = root;
+        while(tmp != nullptr){
+            if(tmp->get_key() == key){
+                return true;
+            }
+            else{
+                if(tmp->get_key() < key){
+                    tmp = tmp->get_right();
+                }
+                else{
+                    tmp = tmp->get_left();
+                }
+            }
+        }
+        return false;
+    }
+    ~raw_rb_tree(){
+        if(tree_size != 0)
+            delete root;
     }
 };
 
 
+template <typename T>
+class rb_set{
+private:
+    raw_rb_tree<T> tree;
+public:
+    void insert(T value){
+        tree.insert(value);
+    }
+    void erase(T value){
+        tree.erase(value);
+    }
+    bool find(T value){
+        return tree.find(value);
+    }
+    unsigned int size(){
+        return tree.get_size();
+    }
 
+};
+//int main() {
+//    rb_set<int> s;
+//    for(int i = 10; i < 1000; i++)
+//        s.insert(i);
+//    for(int i = 1; i < 10000; i++)
+//        s.erase(i);
+//
+//
+//
+//    return 0;
+//}
