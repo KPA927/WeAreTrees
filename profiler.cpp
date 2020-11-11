@@ -1,5 +1,4 @@
 #include "AVL_tree.h"
-#include "rb_tree.cpp"
 #include <iostream>
 #include <random>
 #include <set>
@@ -32,10 +31,10 @@ private:
 public:
     profiler() {
         for (int i = 0; i < n; i++) {
-            test_sequence[i] = rand_uns(1, 1000);
-            if (i < N) {
-                push_sequence[i] = rand_uns(1, 1000);
-            }
+            test_sequence[i] = rand_uns(1, 1000000);
+        }
+        for (int i = 0; i < N; i++) {
+            push_sequence[i] = rand_uns(1, 1000000);
         }
     }
 
@@ -51,17 +50,17 @@ public:
             //testing
             for (int j = 0; j < n; j++) {
                 double start_insert = get_time();
-                tree.insert(test_sequence[i]);
+                tree.insert(test_sequence[j]);
                 double end_insert = get_time();
                 insert_time += end_insert - start_insert;
 
                 double start_find = get_time();
-                tree.find(test_sequence[i]);
+                tree.find(test_sequence[j]);
                 double end_find = get_time();
                 find_time += end_find - start_find;
 
                 double start_erase = get_time();
-                tree.erase(test_sequence[i]);
+                tree.erase(test_sequence[j]);
                 double end_erase = get_time();
                 erase_time += end_erase - start_erase;
             }
@@ -81,9 +80,7 @@ public:
 };
 
 int main(){
-    char k;
-    cin >> k;
-    profiler<AVL<int>> pf;
+    profiler <AVL<int> > pf;
     pf.test();
 }
 
