@@ -9,10 +9,10 @@ y2 = []
 y3 =[]
 
 for i in range(len(data)):
-    x.append(data[i][0])
-    y1.append(data[i][1])
-    y2.append(data[i][2])
-    y3.append(data[i][3])
+    x.append(np.log(data[i][0]))
+    y1.append((data[i][1]))
+    y2.append((data[i][2]))
+    y3.append((data[i][3]))
 
 inset, =  plt.plot(x, y1)
 inset.set_label('Вставка')

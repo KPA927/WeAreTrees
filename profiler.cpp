@@ -51,17 +51,17 @@ public:
             //testing
             for (int j = 0; j < n; j++) {
                 double start_insert = get_time();
-                tree.insert(test_sequence[0]);
+                tree.insert(test_sequence[i]);
                 double end_insert = get_time();
                 insert_time += end_insert - start_insert;
 
                 double start_find = get_time();
-                tree.find(test_sequence[0]);
+                tree.find(test_sequence[i]);
                 double end_find = get_time();
                 find_time += end_find - start_find;
 
                 double start_erase = get_time();
-                tree.erase(test_sequence[0]);
+                tree.erase(test_sequence[i]);
                 double end_erase = get_time();
                 erase_time += end_erase - start_erase;
             }
@@ -83,11 +83,7 @@ public:
 int main(){
     char k;
     cin >> k;
-    if (k == '1') {
-        profiler<AVL<int>> pf;
-    } else {
-        profiler<rb_set<int>> pf;
-    }
+    profiler<AVL<int>> pf;
     pf.test();
 }
 
