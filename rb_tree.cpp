@@ -395,7 +395,7 @@ public:
 
 
 template <typename T>
-class rb_set: public Balanced_tree{
+class rb_set: public Balanced_tree<T>{
 private:
     raw_rb_tree<T> tree;
 public:
