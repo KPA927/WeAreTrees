@@ -413,14 +413,3 @@ public:
     }
 
 };
-//int main() {
-//    rb_set<int> s;
-//    for(int i = 10; i < 1000; i++)
-//        s.insert(i);
-//    for(int i = 1; i < 10000; i++)
-//        s.erase(i);
-//
-//
-//
-//    return 0;
-//}

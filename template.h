@@ -3,9 +3,9 @@
 template <typename T>
 class Balanced_tree{
 public:
-    virtual void insert(T x){};
-    virtual bool find(T x){};
-    virtual void erase(T x){};
+    virtual void insert(T x) = 0;
+    virtual bool find(T x) = 0;
+    virtual void erase(T x) = 0;
 };
 
 #endif
